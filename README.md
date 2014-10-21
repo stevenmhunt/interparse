@@ -1,5 +1,7 @@
 Interparse JS
-==========
+=============
+
+[![Build Status](https://travis-ci.org/stevenmhunt/interparse.svg)](https://travis-ci.org/stevenmhunt/interparse)
 
 ## What is it?
 A toolkit for implementing string interpolation in your application. The resultant expression is compiled into a function for simple reuse.
