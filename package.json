@@ -2,7 +2,7 @@
   "name": "interparse",
   "version": "0.1.0",
   "description": "A toolkit for implementing string interpolation in your application.",
-  "main": "index.js",
+  "main": "interparse.js",
   "scripts": {
     "build": "gulp build",
     "test": "gulp test"
