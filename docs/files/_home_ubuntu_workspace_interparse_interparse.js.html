@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>/home/ubuntu/workspace/interparse/interparse.js</title>
+    <link rel="stylesheet" href="http://yui.yahooapis.com/3.9.1/build/cssgrids/cssgrids-min.css">
+    <link rel="stylesheet" href="../assets/vendor/prettify/prettify-min.css">
+    <link rel="stylesheet" href="../assets/css/main.css" id="site_styles">
+    <link rel="shortcut icon" type="image/png" href="../assets/favicon.png">
+    <script src="http://yui.yahooapis.com/combo?3.9.1/build/yui/yui-min.js"></script>
+</head>
+<body class="yui3-skin-sam">
+
+<div id="doc">
+    <div id="hd" class="yui3-g header">
+        <div class="yui3-u-3-4">
+            
+                <h1><img src="../assets/css/logo.png" title=""></h1>
+            
+        </div>
+        <div class="yui3-u-1-4 version">
+            <em>API Docs for: </em>
+        </div>
+    </div>
+    <div id="bd" class="yui3-g">
+
+        <div class="yui3-u-1-4">
+            <div id="docs-sidebar" class="sidebar apidocs">
+                <div id="api-list">
+    <h2 class="off-left">APIs</h2>
+    <div id="api-tabview" class="tabview">
+        <ul class="tabs">
+            <li><a href="#api-classes">Classes</a></li>
+            <li><a href="#api-modules">Modules</a></li>
+        </ul>
+
+        <div id="api-tabview-filter">
+            <input type="search" id="api-filter" placeholder="Type to filter APIs">
+        </div>
+
+        <div id="api-tabview-panel">
+            <ul id="api-classes" class="apis classes">
+            
+                <li><a href="../classes/Interparse.html">Interparse</a></li>
+            
+            </ul>
+
+            <ul id="api-modules" class="apis modules">
+            
+                <li><a href="../modules/Interparse.html">Interparse</a></li>
+            
+            </ul>
+        </div>
+    </div>
+</div>
+
+            </div>
+        </div>
+        <div class="yui3-u-3-4">
+                <div id="api-options">
+        Show:
+        <label for="api-show-inherited">
+            <input type="checkbox" id="api-show-inherited" checked>
+            Inherited
+        </label>
+
+        <label for="api-show-protected">
+            <input type="checkbox" id="api-show-protected">
+            Protected
+        </label>
+
+        <label for="api-show-private">
+            <input type="checkbox" id="api-show-private">
+            Private
+        </label>
+        <label for="api-show-deprecated">
+            <input type="checkbox" id="api-show-deprecated">
+            Deprecated
+        </label>
+
+    </div>
+
+
+            <div class="apidocs">
+                <div id="docs-main">
+                    <div class="content">
+                        <h1 class="file-heading">File: /home/ubuntu/workspace/interparse/interparse.js</h1>
+
+<div class="file">
+    <pre class="code prettyprint linenums">
+
+/*
+    Interparse v0.1.0
+    Written by Steven Hunt
+    MIT License
+ */
+
+
+/**
+ * Core codebase for the interparse package.
+ *
+ * @module Interparse
+ * @class Interparse
+ */
+
+(function() {
+  var build, compile, extractExp, interparse, isInterpolation, parse, pkg, wrapExp, wrapString,
+    __slice = [].slice;
+
+  pkg = &quot;interparse&quot;;
+
+
+  /**
+   * @private
+   * @method parse
+   * Given an interpolation expression, returns the constituent parts.
+   * @param {string} expression An expression to parse.
+   * @param {object} options An object containing interpolation options.
+   * @return {array} A collection of expression parts.
+   */
+
+  parse = function(expression, options) {
+    var expEnd, expStart, index, nextStart, parts;
+    index = 0;
+    parts = [];
+    while (index &lt; expression.length) {
+      expStart = expression.indexOf(options.start, index);
+      if (expStart &gt; -1) {
+        if (expStart &gt; 0) {
+          parts.push(expression.substring(index, expStart));
+        }
+        nextStart = expStart + options.start.length;
+        expEnd = expression.indexOf(options.end, nextStart);
+        expEnd += options.end.length;
+        parts.push(expression.substring(expStart, expEnd));
+        index = expEnd;
+      } else {
+        parts.push(expression.substring(index));
+        break;
+      }
+    }
+    return parts;
+  };
+
+
+  /**
+   * @private
+   * @method isInterpolation
+   * Given an expression part, determines if it is an interpolation or not.
+   * @param {string} expPart An expression part.
+   * @param {object} options An object containing interpolation options.
+   * @return {bool} Whether or not the expression part is an interpolation.
+   */
+
+  isInterpolation = function(expPart, options) {
+    var isEnd, isStart;
+    isStart = expPart.indexOf(options.start) === 0;
+    isEnd = expPart.indexOf(options.end) === expPart.length - options.end.length;
+    return isStart &amp;&amp; isEnd;
+  };
+
+
+  /**
+   * @private
+   * @method extractExp
+   * Given an interpolation, extracts the expression.
+   * @param {string} interpolation The interpolation expression.
+   * @param {object} options An object containing interpolation options.
+   * @return {string} The extracted interpolation expression.
+   */
+
+  extractExp = function(interpolation, options) {
+    var end, start;
+    start = options.start.length;
+    end = interpolation.length - options.end.length;
+    return interpolation.substring(start, end).trim();
+  };
+
+
+  /**
+   * @private
+   * @method wrapExp
+   * Given an expression, wraps it appropriately for the JS snippet.
+   * @param {string} exp The expression to wrap.
+   * @return {string} a wrapped expression.
+   */
+
+  wrapExp = function(exp) {
+    return &#x27;(&#x27; + exp + &#x27;)&#x27;;
+  };
+
+
+  /**
+   * @private
+   * @method wrapString
+   * Given a string value, wraps it appropriately for the JS snippet.
+   * @param {string} exp The string value to wrap.
+   * @return {string} a wrapped string value.
+   */
+
+  wrapString = function(str) {
+    return &#x27;&quot;&#x27; + str + &#x27;&quot;&#x27;;
+  };
+
+
+  /**
+   * @private
+   * @method build
+   * Given a parsed list of expression parts, creates a JS snippet.
+   * @param {array} parts A list of expression parts.
+   * @param {object} options An object containing interpolation options.
+   * @return {string} an equivalent JavaScript snippet.
+   */
+
+  build = function(parts, options) {
+    var add, js, part, _i, _len;
+    js = &#x27;&#x27;;
+    add = &#x27; + &#x27;;
+    for (_i = 0, _len = parts.length; _i &lt; _len; _i++) {
+      part = parts[_i];
+      if (isInterpolation(part, options)) {
+        js += add + wrapExp(extractExp(part, options));
+      } else {
+        js += add + wrapString(part);
+      }
+    }
+    if (js.length &gt;= add.length) {
+      return js.substring(add.length);
+    } else {
+      return &#x27;&#x27;;
+    }
+  };
+
+
+  /**
+   * @private
+   * @method compile
+   * Given a JS snippet and parameter names, compiles a JS function.
+   * @param {string} js A JavaScript snippet to use.
+   * @param {array} params A list of variable names to use for parameters.
+   * @return {function} A compiled JavaScript function.
+   */
+
+  compile = function(js, params) {
+    return (function(func, args, ctor) {
+      ctor.prototype = func.prototype;
+      var child = new ctor, result = func.apply(child, args);
+      return Object(result) === result ? result : child;
+    })(Function, __slice.call(params).concat([&#x27;return &#x27; + js + &#x27;;&#x27;]), function(){});
+  };
+
+
+  /**
+   * @public
+   * @method interparse
+   * Main function for interparse
+   * @param {string} expression An expression containing interpolated values.
+   * @param {object} options An object containig interpolation options.
+   * @param {optional} values An array which contains values to interpolate with.
+   * @return {?} A function if no values are provided, otherwise a result string.
+   */
+
+  interparse = function(expression, options, values) {
+    var fn, js, parts;
+    options = options || {};
+    options.start = options.start || &#x27;{{&#x27;;
+    options.end = options.end || &#x27;}}&#x27;;
+    options.params = options.params || [&#x27;i&#x27;];
+    parts = parse(expression, options);
+    js = build(parts, options);
+    fn = compile(js, options.params);
+    if (values != null) {
+      return fn.apply(null, values);
+    } else {
+      return fn;
+    }
+  };
+
+  (function() {
+    if ((typeof module !== &quot;undefined&quot; &amp;&amp; module !== null) &amp;&amp; (module.exports != null)) {
+      return module.exports = interparse;
+    } else if (typeof (typeof require !== &quot;undefined&quot; &amp;&amp; require !== null ? require.specified : void 0) === &quot;function&quot; &amp;&amp; require.specified(pkg)) {
+      return define(&quot;interpase&quot;, [], function() {
+        return interparse;
+      });
+    } else if (typeof window !== &quot;undefined&quot; &amp;&amp; window !== null) {
+      return window.interparse = interparse;
+    } else {
+      return interparse;
+    }
+  })();
+
+}).call(this);
+
+//# sourceMappingURL=data:application/json;base64,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ZW50IjpbIiMjI1xuICAgIEludGVycGFyc2UgdjAuMS4wXG4gICAgV3JpdHRlbiBieSBTdGV2ZW4gSHVudFxuICAgIE1JVCBMaWNlbnNlXG4jIyNcblxuIyMjKlxuICogQ29yZSBjb2RlYmFzZSBmb3IgdGhlIGludGVycGFyc2UgcGFja2FnZS5cbiAqXG4gKiBAbW9kdWxlIEludGVycGFyc2VcbiAqIEBjbGFzcyBJbnRlcnBhcnNlXG4gIyMjXG5cbnBrZyA9IFwiaW50ZXJwYXJzZVwiXG5cbiMjIypcbiAqIEBwcml2YXRlXG4gKiBAbWV0aG9kIHBhcnNlXG4gKiBHaXZlbiBhbiBpbnRlcnBvbGF0aW9uIGV4cHJlc3Npb24sIHJldHVybnMgdGhlIGNvbnN0aXR1ZW50IHBhcnRzLlxuICogQHBhcmFtIHtzdHJpbmd9IGV4cHJlc3Npb24gQW4gZXhwcmVzc2lvbiB0byBwYXJzZS5cbiAqIEBwYXJhbSB7b2JqZWN0fSBvcHRpb25zIEFuIG9iamVjdCBjb250YWluaW5nIGludGVycG9sYXRpb24gb3B0aW9ucy5cbiAqIEByZXR1cm4ge2FycmF5fSBBIGNvbGxlY3Rpb24gb2YgZXhwcmVzc2lvbiBwYXJ0cy5cbiAjIyNcbnBhcnNlID0gKGV4cHJlc3Npb24sIG9wdGlvbnMpIC0+XG4gICAgaW5kZXggPSAwXG4gICAgcGFydHMgPSBbXVxuICAgIFxuICAgICMgYXMgbG9uZyBhcyB0aGVyZSBpcyBzdHJpbmcgbGVmdCB0byBldmFsdWF0ZS5cbiAgICB3aGlsZSBpbmRleCA8IGV4cHJlc3Npb24ubGVuZ3RoXG4gICAgICAgIGV4cFN0YXJ0ID0gZXhwcmVzc2lvbi5pbmRleE9mIG9wdGlvbnMuc3RhcnQsIGluZGV4XG4gICAgICAgIFxuICAgICAgICAjIGFyZSB0aGVyZSBhbnkgaW50ZXJwb2xhdGlvbnMgbGVmdD9cbiAgICAgICAgaWYgZXhwU3RhcnQgPiAtMVxuICAgICAgICAgICAgXG4gICAgICAgICAgICAjIGlzIHRoZXJlIGFueXRoaW5nIGJlZm9yZSB0aGUgaW50ZXJwb2xhdGlvbj8gZG9uJ3QgZm9yZ2V0IGFib3V0IGl0IVxuICAgICAgICAgICAgaWYgZXhwU3RhcnQgPiAwXG4gICAgICAgICAgICAgICAgcGFydHMucHVzaCBleHByZXNzaW9uLnN1YnN0cmluZyhpbmRleCwgZXhwU3RhcnQpXG4gICAgICAgICAgICBcbiAgICAgICAgICAgIG5leHRTdGFydCA9IGV4cFN0YXJ0ICsgb3B0aW9ucy5zdGFydC5sZW5ndGhcbiAgICAgICAgICAgICMgYWRkIHRoZSBpbnRlcnBvbGF0aW9uIHRvIHBhcnRzXG4gICAgICAgICAgICBleHBFbmQgPSBleHByZXNzaW9uLmluZGV4T2Ygb3B0aW9ucy5lbmQsIG5leHRTdGFydFxuICAgICAgICAgICAgZXhwRW5kICs9IG9wdGlvbnMuZW5kLmxlbmd0aFxuICAgICAgICAgICAgcGFydHMucHVzaCBleHByZXNzaW9uLnN1YnN0cmluZyBleHBTdGFydCwgZXhwRW5kXG4gICAgICAgICAgICBpbmRleCA9IGV4cEVuZFxuICAgICAgICBlbHNlXG4gICAgICAgICAgICAjIGlmIHdlJ3JlIGFsbCBkb25lLCBwdXNoIHRoZSByZXN0IG9mIHRoZSBzdHJpbmcgaW50byBwYXJ0cy5cbiAgICAgICAgICAgIHBhcnRzLnB1c2ggZXhwcmVzc2lvbi5zdWJzdHJpbmcgaW5kZXhcbiAgICAgICAgICAgIGJyZWFrXG4gICAgcGFydHNcblxuIyMjKlxuICogQHByaXZhdGVcbiAqIEBtZXRob2QgaXNJbnRlcnBvbGF0aW9uXG4gKiBHaXZlbiBhbiBleHByZXNzaW9uIHBhcnQsIGRldGVybWluZXMgaWYgaXQgaXMgYW4gaW50ZXJwb2xhdGlvbiBvciBub3QuXG4gKiBAcGFyYW0ge3N0cmluZ30gZXhwUGFydCBBbiBleHByZXNzaW9uIHBhcnQuXG4gKiBAcGFyYW0ge29iamVjdH0gb3B0aW9ucyBBbiBvYmplY3QgY29udGFpbmluZyBpbnRlcnBvbGF0aW9uIG9wdGlvbnMuXG4gKiBAcmV0dXJuIHtib29sfSBXaGV0aGVyIG9yIG5vdCB0aGUgZXhwcmVzc2lvbiBwYXJ0IGlzIGFuIGludGVycG9sYXRpb24uXG4gIyMjXG5pc0ludGVycG9sYXRpb24gPSAoZXhwUGFydCwgb3B0aW9ucykgLT5cbiAgICBpc1N0YXJ0ID0gZXhwUGFydC5pbmRleE9mKG9wdGlvbnMuc3RhcnQpID09IDBcbiAgICBpc0VuZCA9IGV4cFBhcnQuaW5kZXhPZihvcHRpb25zLmVuZCkgPT0gZXhwUGFydC5sZW5ndGggLSBvcHRpb25zLmVuZC5sZW5ndGhcbiAgICBcbiAgICBpc1N0YXJ0IGFuZCBpc0VuZFxuXG4jIyMqXG4gKiBAcHJpdmF0ZVxuICogQG1ldGhvZCBleHRyYWN0RXhwXG4gKiBHaXZlbiBhbiBpbnRlcnBvbGF0aW9uLCBleHRyYWN0cyB0aGUgZXhwcmVzc2lvbi5cbiAqIEBwYXJhbSB7c3RyaW5nfSBpbnRlcnBvbGF0aW9uIFRoZSBpbnRlcnBvbGF0aW9uIGV4cHJlc3Npb24uXG4gKiBAcGFyYW0ge29iamVjdH0gb3B0aW9ucyBBbiBvYmplY3QgY29udGFpbmluZyBpbnRlcnBvbGF0aW9uIG9wdGlvbnMuXG4gKiBAcmV0dXJuIHtzdHJpbmd9IFRoZSBleHRyYWN0ZWQgaW50ZXJwb2xhdGlvbiBleHByZXNzaW9uLlxuICMjI1xuZXh0cmFjdEV4cCA9IChpbnRlcnBvbGF0aW9uLCBvcHRpb25zKSAtPlxuICAgIHN0YXJ0ID0gb3B0aW9ucy5zdGFydC5sZW5ndGhcbiAgICBlbmQgPSBpbnRlcnBvbGF0aW9uLmxlbmd0aCAtIG9wdGlvbnMuZW5kLmxlbmd0aFxuICAgIGludGVycG9sYXRpb24uc3Vic3RyaW5nKHN0YXJ0LCBlbmQpLnRyaW0oKVxuXG4jIyMqXG4gKiBAcHJpdmF0ZVxuICogQG1ldGhvZCB3cmFwRXhwXG4gKiBHaXZlbiBhbiBleHByZXNzaW9uLCB3cmFwcyBpdCBhcHByb3ByaWF0ZWx5IGZvciB0aGUgSlMgc25pcHBldC5cbiAqIEBwYXJhbSB7c3RyaW5nfSBleHAgVGhlIGV4cHJlc3Npb24gdG8gd3JhcC5cbiAqIEByZXR1cm4ge3N0cmluZ30gYSB3cmFwcGVkIGV4cHJlc3Npb24uXG4gIyMjXG53cmFwRXhwID0gKGV4cCkgLT5cbiAgICByZXR1cm4gJygnICsgZXhwICsgJyknXG4gICAgXG4jIyMqXG4gKiBAcHJpdmF0ZVxuICogQG1ldGhvZCB3cmFwU3RyaW5nXG4gKiBHaXZlbiBhIHN0cmluZyB2YWx1ZSwgd3JhcHMgaXQgYXBwcm9wcmlhdGVseSBmb3IgdGhlIEpTIHNuaXBwZXQuXG4gKiBAcGFyYW0ge3N0cmluZ30gZXhwIFRoZSBzdHJpbmcgdmFsdWUgdG8gd3JhcC5cbiAqIEByZXR1cm4ge3N0cmluZ30gYSB3cmFwcGVkIHN0cmluZyB2YWx1ZS5cbiAjIyNcbndyYXBTdHJpbmcgPSAoc3RyKSAtPlxuICAgIHJldHVybiAnXCInICsgc3RyICsgJ1wiJ1xuXG4jIyMqXG4gKiBAcHJpdmF0ZVxuICogQG1ldGhvZCBidWlsZFxuICogR2l2ZW4gYSBwYXJzZWQgbGlzdCBvZiBleHByZXNzaW9uIHBhcnRzLCBjcmVhdGVzIGEgSlMgc25pcHBldC5cbiAqIEBwYXJhbSB7YXJyYXl9IHBhcnRzIEEgbGlzdCBvZiBleHByZXNzaW9uIHBhcnRzLlxuICogQHBhcmFtIHtvYmplY3R9IG9wdGlvbnMgQW4gb2JqZWN0IGNvbnRhaW5pbmcgaW50ZXJwb2xhdGlvbiBvcHRpb25zLlxuICogQHJldHVybiB7c3RyaW5nfSBhbiBlcXVpdmFsZW50IEphdmFTY3JpcHQgc25pcHBldC5cbiAjIyNcbmJ1aWxkID0gKHBhcnRzLCBvcHRpb25zKSAtPlxuICAgIGpzID0gJydcbiAgICBhZGQgPSAnICsgJ1xuICAgIGZvciBwYXJ0IGluIHBhcnRzXG4gICAgICAgIGlmIGlzSW50ZXJwb2xhdGlvbiBwYXJ0LCBvcHRpb25zXG4gICAgICAgICAgICBqcyArPSBhZGQgKyB3cmFwRXhwIGV4dHJhY3RFeHAgcGFydCwgb3B0aW9uc1xuICAgICAgICBlbHNlXG4gICAgICAgICAgICBqcyArPSBhZGQgKyB3cmFwU3RyaW5nIHBhcnRcbiAgICAgICAgICAgIFxuICAgIGlmIGpzLmxlbmd0aCA+PSBhZGQubGVuZ3RoXG4gICAgICAgIGpzLnN1YnN0cmluZyBhZGQubGVuZ3RoXG4gICAgZWxzZSAnJ1xuXG4jIyMqXG4gKiBAcHJpdmF0ZVxuICogQG1ldGhvZCBjb21waWxlXG4gKiBHaXZlbiBhIEpTIHNuaXBwZXQgYW5kIHBhcmFtZXRlciBuYW1lcywgY29tcGlsZXMgYSBKUyBmdW5jdGlvbi5cbiAqIEBwYXJhbSB7c3RyaW5nfSBqcyBBIEphdmFTY3JpcHQgc25pcHBldCB0byB1c2UuXG4gKiBAcGFyYW0ge2FycmF5fSBwYXJhbXMgQSBsaXN0IG9mIHZhcmlhYmxlIG5hbWVzIHRvIHVzZSBmb3IgcGFyYW1ldGVycy5cbiAqIEByZXR1cm4ge2Z1bmN0aW9ufSBBIGNvbXBpbGVkIEphdmFTY3JpcHQgZnVuY3Rpb24uXG4gIyMjXG5jb21waWxlID0gKGpzLCBwYXJhbXMpIC0+XG4gICAgbmV3IEZ1bmN0aW9uKHBhcmFtcy4uLiwgJ3JldHVybiAnICsganMgKyAnOycpXG5cbiMjIypcbiAqIEBwdWJsaWNcbiAqIEBtZXRob2QgaW50ZXJwYXJzZVxuICogTWFpbiBmdW5jdGlvbiBmb3IgaW50ZXJwYXJzZVxuICogQHBhcmFtIHtzdHJpbmd9IGV4cHJlc3Npb24gQW4gZXhwcmVzc2lvbiBjb250YWluaW5nIGludGVycG9sYXRlZCB2YWx1ZXMuXG4gKiBAcGFyYW0ge29iamVjdH0gb3B0aW9ucyBBbiBvYmplY3QgY29udGFpbmlnIGludGVycG9sYXRpb24gb3B0aW9ucy5cbiAqIEBwYXJhbSB7b3B0aW9uYWx9IHZhbHVlcyBBbiBhcnJheSB3aGljaCBjb250YWlucyB2YWx1ZXMgdG8gaW50ZXJwb2xhdGUgd2l0aC5cbiAqIEByZXR1cm4gez99IEEgZnVuY3Rpb24gaWYgbm8gdmFsdWVzIGFyZSBwcm92aWRlZCwgb3RoZXJ3aXNlIGEgcmVzdWx0IHN0cmluZy5cbiAjIyNcbmludGVycGFyc2UgPSAoZXhwcmVzc2lvbiwgb3B0aW9ucywgdmFsdWVzKSAtPlxuICAgIFxuICAgICMgc2V0dXAgZGVmYXVsdCBvcHRpb25zIHZhbHVlcyBpZiByZXF1aXJlZC5cbiAgICBvcHRpb25zID0gb3B0aW9ucyBvciB7fVxuICAgIG9wdGlvbnMuc3RhcnQgPSBvcHRpb25zLnN0YXJ0IG9yICd7eydcbiAgICBvcHRpb25zLmVuZCA9IG9wdGlvbnMuZW5kIG9yICd9fSdcbiAgICBvcHRpb25zLnBhcmFtcyA9IG9wdGlvbnMucGFyYW1zIG9yIFsnaSddXG4gICAgXG4gICAgIyBwYXJzZSB0aGUgZXhwcmVzc2lvbi5cbiAgICBwYXJ0cyA9IHBhcnNlIGV4cHJlc3Npb24sIG9wdGlvbnNcbiAgICBcbiAgICAjIGJ1aWxkIHRoZSBqcyBzbmlwcGV0LlxuICAgIGpzID0gYnVpbGQgcGFydHMsIG9wdGlvbnNcbiAgICBcbiAgICAjIGNvbXBpbGUgdGhlIGZ1bmN0aW9uLlxuICAgIGZuID0gY29tcGlsZSBqcywgb3B0aW9ucy5wYXJhbXNcblxuICAgICMgY3Vycnk6IGlmIHdlIGhhdmUgdmFsdWVzLCByZXR1cm4gdGhlIHJlc3VsdCBvZiB0aGUgZnVuY3Rpb24uXG4gICAgaWYgdmFsdWVzP1xuICAgICAgICBmbiB2YWx1ZXMuLi5cbiAgICAjIG90aGVyd2lzZSByZXR1cm4gdGhlIGZ1bmN0aW9uIGZvciBsYXRlciB1c2UuXG4gICAgZWxzZVxuICAgICAgICBmblxuXG4jIHJlZ2lzdGVyIHRoZSBtb2R1bGUgd2l0aCB3aGljaGV2ZXIgbW9kdWxlIHN5c3RlbSBpcyBhdmFpbGFibGUuXG5kbyAoKSAtPlxuICAgICMgY2hlY2sgZm9yIENvbW1vbkpTXG4gICAgaWYgbW9kdWxlPyBhbmQgbW9kdWxlLmV4cG9ydHM/XG4gICAgICAgIG1vZHVsZS5leHBvcnRzID0gaW50ZXJwYXJzZVxuICAgICMgY2hlY2sgZm9yIEFNRFxuICAgIGVsc2UgaWYgdHlwZW9mIHJlcXVpcmU/LnNwZWNpZmllZCA9PSBcImZ1bmN0aW9uXCIgYW5kIHJlcXVpcmUuc3BlY2lmaWVkKHBrZylcbiAgICAgICAgZGVmaW5lIFwiaW50ZXJwYXNlXCIsIFtdLCAoKSAtPiBpbnRlcnBhcnNlXG4gICAgIyBjaGVjayBmb3IgYnJvd3NlciBnbG9iYWxcbiAgICBlbHNlIGlmIHdpbmRvdz9cbiAgICAgICAgd2luZG93LmludGVycGFyc2UgPSBpbnRlcnBhcnNlXG4gICAgIyB3aGVyZSBhbSBJIGV4YWN0bHk/XG4gICAgZWxzZVxuICAgICAgICBpbnRlcnBhcnNlIl0sInNvdXJjZVJvb3QiOiIvc291cmNlLyJ9
+    </pre>
+</div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../assets/vendor/prettify/prettify-min.js"></script>
+<script>prettyPrint();</script>
+<script src="../assets/js/yui-prettify.js"></script>
+<script src="../assets/../api.js"></script>
+<script src="../assets/js/api-filter.js"></script>
+<script src="../assets/js/api-list.js"></script>
+<script src="../assets/js/api-search.js"></script>
+<script src="../assets/js/apidocs.js"></script>
+</body>
+</html>
