@@ -1,6 +1,6 @@
 {
   "name": "interparse",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A toolkit for implementing string interpolation in your application.",
   "main": "interparse.js",
   "scripts": {
@@ -17,6 +17,7 @@
     "coffeescript",
     "ruby",
     "handlebars",
+    "mustache",
     "underscore",
     "template",
     "toolkit"

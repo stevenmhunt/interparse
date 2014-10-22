@@ -37,8 +37,11 @@ parse = (expression, options) ->
                 parts.push expression.substring(index, expStart)
             
             nextStart = expStart + options.start.length
+            
             # add the interpolation to parts
             expEnd = expression.indexOf options.end, nextStart
+            if expEnd == -1
+                expEnd = expression.length - options.end.length
             expEnd += options.end.length
             parts.push expression.substring expStart, expEnd
             index = expEnd
@@ -108,7 +111,9 @@ build = (parts, options) ->
     add = ' + '
     for part in parts
         if isInterpolation part, options
-            js += add + wrapExp extractExp part, options
+            exp = extractExp part, options
+            js += add + wrapExp exp
+            processExp exp, options
         else
             js += add + wrapString part
             
@@ -116,6 +121,33 @@ build = (parts, options) ->
         js.substring add.length
     else ''
 
+###*
+ * @private
+ * @method processExp
+ * Given an expression and options, alter the parameter list.
+ * @param {string} exp The expression to parse.
+ * @param {object} options An object containing interpolation options.
+ * @return {null}
+ ###
+processExp = (exp, options) ->
+    
+    # make sure there's a params list.
+    if not options.params?
+        options.params = []
+    
+    # add support for child property and array selection.
+    result = exp
+        .split('.')[0]
+        .split('[')[0]
+        .split('(')[0]
+    
+    # see if the expression is a variable name
+    match = /^[a-z0-9]+$/i.test result
+    
+    # add it to the list if it's a match and it's not already there.
+    if match and options.params.indexOf result == -1
+        options.params.push result
+    
 ###*
  * @private
  * @method compile
@@ -128,37 +160,83 @@ compile = (js, params) ->
     new Function(params..., 'return ' + js + ';')
 
 ###*
+ * @private
+ * @method processValues
+ * Given a user-provided value, ensures that it is formatted for the function.
+ * @param {object} values An object, string, or array to process.
+ * @param {object} options An object containing interpolation options.
+ * @return {array} values The values array to pass to the compiled function.
+ ###
+processValues = (values, options) ->
+    if Array.isArray values
+        values
+    else if typeof values == 'string'
+        [values]
+    else
+        result = []
+        for param in options.params
+            for key, val of values
+                if key == param
+                    result.push val
+        result
+
+###*
  * @public
  * @method interparse
  * Main function for interparse
- * @param {string} expression An expression containing interpolated values.
  * @param {object} options An object containig interpolation options.
+ * @param {string} expression An expression containing interpolated values.
  * @param {optional} values An array which contains values to interpolate with.
- * @return {?} A function if no values are provided, otherwise a result string.
+ * @return {misc} A function if no values are provided, otherwise a string.
  ###
-interparse = (expression, options, values) ->
+interparse = (options, expression, values) ->
     
+    # handle legacy parameters.
+    if typeof options == 'string' and typeof expression != 'string'
+        [options, expression] = [expression, options]
+    
+    # if options is a string, parse it for values.
+    if typeof options == 'string'
+        vals = options.split '<value>'
+        options =
+            start: vals[0]
+            end: vals[1]
+        
     # setup default options values if required.
     options = options or {}
     options.start = options.start or '{{'
     options.end = options.end or '}}'
-    options.params = options.params or ['i']
+    options.params = options.params or []
     
-    # parse the expression.
-    parts = parse expression, options
-    
-    # build the js snippet.
-    js = build parts, options
-    
-    # compile the function.
-    fn = compile js, options.params
+    # a lambda which can complete the interpolation with the given options.
+    parseWithOptions = (expression, values) ->
 
-    # curry: if we have values, return the result of the function.
-    if values?
-        fn values...
-    # otherwise return the function for later use.
+        # parse the expression.
+        parts = parse expression, options
+        
+        # build the js snippet.
+        js = build parts, options
+        
+        # compile the function.
+        fn = compile js, options.params
+    
+        # wrap the compiled function to handle processing of values.
+        fnWrapper = (values) ->
+            fn processValues(values, options)...
+    
+        # curry: if we have values, return the result of the function.
+        if values?
+            fnWrapper values
+        # otherwise return the function for later use.
+        else
+            fnWrapper
+    
+    # if there is only one argument, return the function without calling it.
+    if arguments.length == 1
+        parseWithOptions
+    # otherwise, actually run the parse.
     else
-        fn
+        parseWithOptions expression, values
 
 # register the module with whichever module system is available.
 do () ->

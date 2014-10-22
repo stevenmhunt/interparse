@@ -30,9 +30,7 @@ gulp.task 'build', ['lint'], () ->
 gulp.task 'test', ['build'], () ->
     gulp.src '**/*.test.coffee'
     .pipe nodeunit
-        reporter: 'junit'
-        reporterOptions:
-            output: 'test'
+        reporter: 'default'
 
 gulp.task 'docs', ['build'], () ->
     gulp.src './interparse.js'
